@@ -93,6 +93,21 @@ dominate the whole session.
   not shouting.
 - **`/rage` itself is never scored.** Checking your rage is not a rage event.
 
+## The gallery
+
+Everyone thinks their agent is the worst. Prove it.
+
+```bash
+/rage --share
+```
+
+That prints a small JSON card — counts, verdict band, and signal names, and
+**nothing you typed**. Save it to `gallery/entries/<your-handle>.json`, write
+your own caption, and open a PR. CI validates it and it goes up on the wall.
+
+**[→ Browse the gallery](https://rangulvers.github.io/rage-o-meter/gallery.html)**
+· [submission guide](gallery/README.md)
+
 ## Privacy
 
 Everything is local. There are no model calls, no network requests, and no

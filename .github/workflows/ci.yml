@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run scorer tests
+        run: npm test
+
+      - name: Validate gallery entries
+        run: npm run gallery:validate
+
+      - name: Rebuild gallery page
+        run: npm run gallery:build
+
+      # The gallery page is committed, so a PR that adds an entry must also
+      # commit the regenerated HTML. This keeps GitHub Pages a pure static
+      # deploy with no build step.
+      - name: Check gallery page is up to date
+        run: |
+          if ! git diff --quiet -- docs/gallery.html; then
+            echo "::error::docs/gallery.html is out of date."
+            echo "Run 'npm run gallery:build' and commit the result."
+            git diff --stat -- docs/gallery.html
+            exit 1
+          fi
+          echo "docs/gallery.html is up to date."

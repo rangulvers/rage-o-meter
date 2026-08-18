@@ -1,0 +1,9 @@
+{
+  "handle": "example-calm",
+  "reprimands": 1,
+  "sessions": 3,
+  "ragePerSession": 0.3,
+  "band": "Great agentic workflow",
+  "topSignals": ["rapid-fire"],
+  "caption": "honestly it did fine. suspicious."
+}

@@ -130,6 +130,7 @@
     text-decoration: none; font-family: var(--mono);
   }
   .gh-btn:hover { filter: brightness(1.1); }
+  .gh-btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); margin-left: 10px; }
 
   @media (max-width: 520px) {
     .wrap { padding: 0 16px; }
@@ -151,7 +152,8 @@
   <p class="tagline">Finally, <strong>an AI benchmark you can trust.</strong></p>
   <div class="acronym"><b>R</b>eprimands <b>A</b>t <b>G</b>enerative <b>E</b>ntities — per session</div>
   <div>
-    <a class="gh-btn" href="https://github.com/rangulvers/rage-o-meter">View on GitHub →</a>
+    <a class="gh-btn" href="./gallery.html">See the gallery →</a>
+    <a class="gh-btn ghost" href="https://github.com/rangulvers/rage-o-meter">View on GitHub</a>
   </div>
 </header>
 
@@ -376,6 +378,23 @@
     <b>Privacy:</b> everything stays in <code>~/.claude/rage/</code> on your machine.
     Only an 80-character excerpt of flagged prompts is stored. Calm prompts never touch disk.
     Wipe it any time with <code>--reset --yes</code>.
+  </div>
+</section>
+
+<section class="wrap">
+  <h2><span class="hash">#</span> The gallery</h2>
+  <p class="lead">
+    Everyone thinks their agent is the worst. <b>Prove it.</b>
+    Run <code>/rage --share</code>, open a pull request with the card it prints,
+    and your stats go up on the wall.
+  </p>
+  <div class="install-code"><span class="c"># generate your gallery card</span>
+/rage --share</div>
+  <p class="lead" style="margin-top:18px">
+    Cards carry counts, verdict, and signal names only — never anything you typed.
+  </p>
+  <div>
+    <a class="gh-btn" href="./gallery.html">Browse the gallery →</a>
   </div>
 </section>
 

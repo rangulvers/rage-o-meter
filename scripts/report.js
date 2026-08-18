@@ -8,6 +8,7 @@
  *   report.js --all      → all-time only
  *   report.js --session <id>
  *   report.js --json     → machine-readable
+ *   report.js --share    → gallery card JSON (stats only, no prompt text)
  *   report.js --reset    → wipe history (asks for --yes to actually do it)
  */
 
@@ -19,14 +20,24 @@ const store = require(path.join(__dirname, '..', 'lib', 'store.js'));
 const BAR_WIDTH = 24;
 
 function parseArgs(argv) {
-  const args = { mode: 'default', json: false, session: null, yes: false };
+  const args = {
+    mode: 'default',
+    json: false,
+    session: null,
+    yes: false,
+    handle: null,
+    caption: null,
+  };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--all') args.mode = 'all';
     else if (a === '--json') args.json = true;
     else if (a === '--reset') args.mode = 'reset';
+    else if (a === '--share') args.mode = 'share';
     else if (a === '--yes') args.yes = true;
     else if (a === '--session') args.session = argv[++i] || null;
+    else if (a === '--handle') args.handle = argv[++i] || null;
+    else if (a === '--caption') args.caption = argv[++i] || null;
   }
   return args;
 }
@@ -151,6 +162,54 @@ function renderAllTime(events) {
   return lines.join('\n');
 }
 
+/**
+ * Build a gallery card payload.
+ *
+ * Deliberately contains NO prompt text. Only counts, the verdict band, and
+ * signal *names*. The caption is written by hand, so nothing you typed at an
+ * agent can end up in a public pull request by accident.
+ */
+function buildShareCard(events, handle, caption) {
+  const { totalRage, sessionCount, perSession } = summarize(events);
+  const topSignals = signalTally(events)
+    .slice(0, 3)
+    .map(([name]) => name);
+
+  return {
+    handle: handle || 'your-github-handle',
+    reprimands: totalRage,
+    sessions: sessionCount,
+    ragePerSession: Number(perSession.toFixed(1)),
+    band: band(perSession).label,
+    topSignals,
+    caption: caption || 'what did it do this time?',
+  };
+}
+
+function renderShare(events, args) {
+  const card = buildShareCard(events, args.handle, args.caption);
+  const slug = (card.handle || 'entry').replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
+
+  const lines = [];
+  lines.push('');
+  lines.push('  Your gallery card');
+  lines.push('  ' + '─'.repeat(46));
+  lines.push('');
+  lines.push(JSON.stringify(card, null, 2).split('\n').map((l) => '  ' + l).join('\n'));
+  lines.push('');
+  lines.push('  ' + '─'.repeat(46));
+  lines.push('  Contains no prompt text — only counts and signal names.');
+  lines.push('');
+  lines.push('  To submit:');
+  lines.push(`    1. Save the JSON above as  gallery/entries/${slug}.json`);
+  lines.push('    2. Edit "handle" and "caption" to taste');
+  lines.push('    3. Open a PR against rangulvers/rage-o-meter');
+  lines.push('');
+  lines.push('  Full guide: https://github.com/rangulvers/rage-o-meter/blob/main/gallery/README.md');
+  lines.push('');
+  return lines.join('\n');
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
 
@@ -173,6 +232,17 @@ function main() {
   }
 
   const events = store.readEvents();
+
+  if (args.mode === 'share') {
+    if (args.json) {
+      process.stdout.write(
+        JSON.stringify(buildShareCard(events, args.handle, args.caption), null, 2) + '\n'
+      );
+      return;
+    }
+    process.stdout.write(renderShare(events, args));
+    return;
+  }
 
   if (args.json) {
     const { totalRage, sessionCount, perSession } = summarize(events);
