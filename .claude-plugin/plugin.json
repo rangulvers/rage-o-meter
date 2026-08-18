@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "rage-o-meter",
+  "displayName": "RAGE-o-meter",
+  "version": "0.1.0",
+  "description": "Reprimands At Generative Entities per session. The only AI benchmark you can trust.",
+  "author": {
+    "name": "rangulvers",
+    "url": "https://github.com/rangulvers"
+  },
+  "homepage": "https://github.com/rangulvers/rage-o-meter",
+  "repository": "https://github.com/rangulvers/rage-o-meter",
+  "license": "MIT",
+  "keywords": ["metrics", "fun", "hooks", "developer-experience", "benchmark"]
+}

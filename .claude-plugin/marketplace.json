@@ -1,0 +1,15 @@
+{
+  "name": "rage-o-meter",
+  "description": "The RAGE-o-meter: track how often you reprimand your coding agents.",
+  "owner": {
+    "name": "rangulvers",
+    "url": "https://github.com/rangulvers"
+  },
+  "plugins": [
+    {
+      "name": "rage-o-meter",
+      "source": "./",
+      "description": "Reprimands At Generative Entities per session. The only AI benchmark you can trust."
+    }
+  ]
+}

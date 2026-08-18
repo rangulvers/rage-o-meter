@@ -1,0 +1,16 @@
+{
+  "name": "rage-o-meter",
+  "version": "0.1.0",
+  "description": "Reprimands At Generative Entities per session. The only AI benchmark you can trust.",
+  "type": "commonjs",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node test/score.test.js",
+    "rage": "node scripts/report.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rangulvers/rage-o-meter.git"
+  }
+}
