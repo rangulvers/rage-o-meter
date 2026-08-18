@@ -16,6 +16,8 @@ In the age of agentic development, we need an update.
 
 Finally, an AI benchmark you can trust.
 
+**[→ rangulvers.github.io/rage-o-meter](https://rangulvers.github.io/rage-o-meter/)**
+
 ---
 
 ## What it actually does

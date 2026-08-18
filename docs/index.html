@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAGE-o-meter — the only AI benchmark you can trust</title>
+<meta name="description" content="RAGE: Reprimands At Generative Entities per session. A Claude Code plugin that measures how often you yell at your agents.">
+<meta property="og:title" content="RAGE-o-meter">
+<meta property="og:description" content="Reprimands At Generative Entities per session. Finally, an AI benchmark you can trust.">
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --red: #f85149;
+    --accent: #ff6b35;
+    --mono: "SF Mono", "Cascadia Code", "Fira Code", Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+
+  header { text-align: center; padding: 72px 0 40px; }
+  .flames { font-size: 2rem; letter-spacing: 8px; animation: flicker 2s infinite; }
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    45% { opacity: .75; }
+    55% { opacity: .95; }
+    70% { opacity: .8; }
+  }
+  h1 {
+    font-family: var(--mono);
+    font-size: clamp(2.2rem, 7vw, 3.6rem);
+    margin: 12px 0 4px;
+    background: linear-gradient(90deg, var(--green), var(--yellow), var(--red));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .tagline { color: var(--muted); font-size: 1.15rem; }
+  .tagline strong { color: var(--text); }
+  .acronym {
+    display: inline-block; margin-top: 20px; padding: 10px 18px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    font-family: var(--mono); font-size: .95rem; color: var(--muted);
+  }
+  .acronym b { color: var(--accent); }
+
+  section { padding: 48px 0; border-top: 1px solid var(--border); }
+  h2 { font-family: var(--mono); font-size: 1.5rem; margin-bottom: 18px; }
+  h2 .hash { color: var(--accent); }
+  p.lead { color: var(--muted); max-width: 640px; margin-bottom: 24px; }
+  p.lead b, p.lead strong { color: var(--text); }
+
+  .svg-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 28px; margin: 20px 0; text-align: center; overflow-x: auto;
+  }
+  .svg-card figcaption { color: var(--muted); font-size: .85rem; margin-top: 14px; font-family: var(--mono); }
+
+  .bands { display: grid; gap: 12px; margin-top: 20px; }
+  .band {
+    display: grid; grid-template-columns: 90px 60px 1fr; align-items: center; gap: 16px;
+    background: var(--panel); border: 1px solid var(--border); border-left-width: 5px;
+    border-radius: 10px; padding: 16px 20px;
+  }
+  .band .range { font-family: var(--mono); font-size: 1.3rem; font-weight: 700; }
+  .band .emoji { font-size: 1.7rem; text-align: center; }
+  .band.ok    { border-left-color: var(--green); }  .band.ok .range { color: var(--green); }
+  .band.meh   { border-left-color: var(--yellow); } .band.meh .range { color: var(--yellow); }
+  .band.fire  { border-left-color: var(--red); }    .band.fire .range { color: var(--red); }
+  .band .label { font-size: 1.05rem; }
+  .band .sub { color: var(--muted); font-size: .85rem; }
+
+  .terminal {
+    background: #0a0d12; border: 1px solid var(--border); border-radius: 12px;
+    font-family: var(--mono); font-size: .82rem; text-align: left;
+    margin: 20px 0; overflow-x: auto;
+  }
+  .term-bar { display: flex; gap: 7px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+  .term-body { padding: 20px 24px; white-space: pre; line-height: 1.55; color: var(--text); overflow-x: auto; }
+  .t-dim { color: var(--muted); }
+  .t-bar { color: var(--accent); }
+  .t-red { color: var(--red); }
+  .t-yel { color: var(--yellow); }
+  .t-grn { color: var(--green); }
+
+  .signals { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-top: 20px; }
+  .signal { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .signal .name { font-family: var(--mono); color: var(--accent); font-size: .9rem; }
+  .signal .pts { float: right; font-family: var(--mono); color: var(--muted); font-size: .8rem; }
+  .signal .ex { color: var(--muted); font-size: .85rem; margin-top: 6px; font-style: italic; }
+
+  .install-code {
+    background: #0a0d12; border: 1px solid var(--border); border-radius: 10px;
+    font-family: var(--mono); font-size: .9rem; padding: 18px 22px; margin: 14px 0;
+    color: var(--green); overflow-x: auto; white-space: pre;
+  }
+  .install-code .c { color: var(--muted); }
+
+  .note {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 20px; color: var(--muted); font-size: .9rem; margin-top: 20px;
+  }
+  .note b { color: var(--text); }
+  .note code { font-family: var(--mono); color: var(--text); }
+
+  footer {
+    border-top: 1px solid var(--border); padding: 40px 0 60px;
+    text-align: center; color: var(--muted); font-size: .85rem;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .gh-btn {
+    display: inline-block; margin-top: 24px; padding: 12px 26px;
+    background: var(--accent); color: #0d1117; font-weight: 700; border-radius: 10px;
+    text-decoration: none; font-family: var(--mono);
+  }
+  .gh-btn:hover { filter: brightness(1.1); }
+
+  @media (max-width: 520px) {
+    .wrap { padding: 0 16px; }
+    header { padding: 48px 0 28px; }
+    .svg-card { padding: 16px; }
+    .band { grid-template-columns: 64px 40px 1fr; gap: 10px; padding: 14px; }
+    .band .range { font-size: 1.1rem; }
+    .band .emoji { font-size: 1.35rem; }
+    .signals { grid-template-columns: 1fr; }
+    .term-body, .install-code { font-size: .74rem; padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <div class="flames">🔥🔥🔥</div>
+  <h1>RAGE-o-meter</h1>
+  <p class="tagline">Finally, <strong>an AI benchmark you can trust.</strong></p>
+  <div class="acronym"><b>R</b>eprimands <b>A</b>t <b>G</b>enerative <b>E</b>ntities — per session</div>
+  <div>
+    <a class="gh-btn" href="https://github.com/rangulvers/rage-o-meter">View on GitHub →</a>
+  </div>
+</header>
+
+<section class="wrap">
+  <h2><span class="hash">#</span> The metric we deserve</h2>
+  <p class="lead">
+    Software engineering used to have one true code quality metric: <b>WTFs per minute</b>.
+    But in the age of agentic development, nobody reads code anymore — we supervise entities
+    that write it. The metric had to evolve.
+  </p>
+
+  <figure class="svg-card">
+    <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Evolution from WTFs per minute at a code review door to RAGE per session at an agent terminal" style="max-width:680px;width:100%">
+      <g>
+        <rect x="30" y="40" width="150" height="160" rx="8" fill="#161b22" stroke="#30363d"/>
+        <text x="105" y="70" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="13">CODE REVIEW</text>
+        <rect x="75" y="90" width="60" height="110" rx="3" fill="#0d1117" stroke="#30363d"/>
+        <circle cx="125" cy="150" r="4" fill="#8b949e"/>
+        <text x="55" y="115" fill="#f85149" font-family="monospace" font-size="14" font-weight="bold">WTF!</text>
+        <text x="140" y="105" fill="#f85149" font-family="monospace" font-size="11" font-weight="bold">WTF?</text>
+        <text x="150" y="130" fill="#d29922" font-family="monospace" font-size="9" font-weight="bold">wtf…</text>
+        <text x="105" y="225" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="12">then: WTFs/minute</text>
+      </g>
+      <g>
+        <line x1="210" y1="120" x2="290" y2="120" stroke="#ff6b35" stroke-width="3"/>
+        <polygon points="290,112 306,120 290,128" fill="#ff6b35"/>
+        <text x="258" y="105" text-anchor="middle" fill="#ff6b35" font-family="monospace" font-size="11">evolution</text>
+      </g>
+      <g>
+        <rect x="330" y="40" width="360" height="160" rx="8" fill="#161b22" stroke="#30363d"/>
+        <circle cx="348" cy="56" r="5" fill="#ff5f57"/>
+        <circle cx="364" cy="56" r="5" fill="#febc2e"/>
+        <circle cx="380" cy="56" r="5" fill="#28c840"/>
+        <rect x="360" y="95" width="56" height="46" rx="8" fill="#0d1117" stroke="#8b949e"/>
+        <circle cx="376" cy="113" r="5" fill="#3fb950"/>
+        <circle cx="400" cy="113" r="5" fill="#3fb950"/>
+        <rect x="374" y="126" width="28" height="5" rx="2.5" fill="#8b949e"/>
+        <line x1="388" y1="95" x2="388" y2="82" stroke="#8b949e" stroke-width="2"/>
+        <circle cx="388" cy="79" r="4" fill="#ff6b35"/>
+        <text x="430" y="105" fill="#8b949e" font-family="monospace" font-size="10">I've also refactored 47</text>
+        <text x="430" y="119" fill="#8b949e" font-family="monospace" font-size="10">files you never mentioned</text>
+        <text x="430" y="155" fill="#f85149" font-family="monospace" font-size="13" font-weight="bold">NO. I SAID ONE FILE!!</text>
+        <text x="510" y="225" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="12">now: RAGE/session</text>
+      </g>
+    </svg>
+    <figcaption>same energy, new target</figcaption>
+  </figure>
+</section>
+
+<section class="wrap">
+  <h2><span class="hash">#</span> The bands</h2>
+  <p class="lead">"How many times did I yell at my agents before the task was done?"</p>
+
+  <figure class="svg-card">
+    <svg viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A gauge from calm to furious" style="max-width:400px;width:100%">
+      <defs>
+        <linearGradient id="arc" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#3fb950"/>
+          <stop offset="50%" stop-color="#d29922"/>
+          <stop offset="100%" stop-color="#f85149"/>
+        </linearGradient>
+      </defs>
+      <path d="M 60 200 A 150 150 0 0 1 360 200" fill="none" stroke="url(#arc)" stroke-width="26" stroke-linecap="round"/>
+      <text x="58"  y="235" text-anchor="middle" fill="#3fb950" font-family="monospace" font-size="15" font-weight="bold">0</text>
+      <text x="210" y="42"  text-anchor="middle" fill="#d29922" font-family="monospace" font-size="15" font-weight="bold">4</text>
+      <text x="362" y="235" text-anchor="middle" fill="#f85149" font-family="monospace" font-size="15" font-weight="bold">6+</text>
+      <g>
+        <line x1="210" y1="200" x2="320" y2="105" stroke="#e6edf3" stroke-width="5" stroke-linecap="round">
+          <animateTransform attributeName="transform" type="rotate"
+            values="-70 210 200; 15 210 200; -20 210 200; 25 210 200; 10 210 200"
+            keyTimes="0; .35; .55; .8; 1" dur="6s" repeatCount="indefinite"/>
+        </line>
+        <circle cx="210" cy="200" r="12" fill="#e6edf3"/>
+        <circle cx="210" cy="200" r="5" fill="#0d1117"/>
+      </g>
+      <text x="210" y="250" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="12">measuring…</text>
+    </svg>
+    <figcaption>live reading from an average tuesday</figcaption>
+  </figure>
+
+  <div class="bands">
+    <div class="band ok">
+      <div class="range">0–2</div><div class="emoji">😌</div>
+      <div><div class="label">Great agentic workflow</div>
+      <div class="sub">Either the agent behaved, or you have given up entirely.</div></div>
+    </div>
+    <div class="band meh">
+      <div class="range">3–5</div><div class="emoji">😐</div>
+      <div><div class="label">Needs better prompting</div>
+      <div class="sub">You said "actually" more than once. It was noted.</div></div>
+    </div>
+    <div class="band fire">
+      <div class="range">6+</div><div class="emoji">🔥</div>
+      <div><div class="label">I'm doing the task myself</div>
+      <div class="sub">The oldest fallback architecture known to engineering.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2><span class="hash">#</span> How it works</h2>
+  <p class="lead">
+    A Claude Code hook watches every prompt you submit and scores it — <b>fully locally</b>.
+    No model calls, no network, no telemetry. Just a pile of honest heuristics
+    and a JSONL file that knows too much about you.
+  </p>
+
+  <figure class="svg-card">
+    <svg viewBox="0 0 720 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pipeline: your prompt flows through the hook scorer into a local log, and /rage reads it back" style="max-width:680px;width:100%">
+      <g>
+        <rect x="20" y="55" width="150" height="60" rx="10" fill="#161b22" stroke="#30363d"/>
+        <text x="95" y="80" text-anchor="middle" fill="#e6edf3" font-family="monospace" font-size="12">"NO. I told</text>
+        <text x="95" y="98" text-anchor="middle" fill="#e6edf3" font-family="monospace" font-size="12">you already!!"</text>
+        <text x="95" y="140" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="10">your prompt</text>
+      </g>
+      <line x1="176" y1="85" x2="216" y2="85" stroke="#8b949e" stroke-width="2"/>
+      <polygon points="216,79 228,85 216,91" fill="#8b949e"/>
+      <g>
+        <rect x="234" y="40" width="170" height="90" rx="10" fill="#161b22" stroke="#ff6b35"/>
+        <text x="319" y="64" text-anchor="middle" fill="#ff6b35" font-family="monospace" font-size="11" font-weight="bold">hook scorer</text>
+        <text x="319" y="84" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="10">correction   +2</text>
+        <text x="319" y="99" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="10">negation     +1</text>
+        <text x="319" y="114" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="10">punctuation  +1</text>
+        <text x="319" y="150" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="10">UserPromptSubmit</text>
+      </g>
+      <line x1="410" y1="85" x2="450" y2="85" stroke="#8b949e" stroke-width="2"/>
+      <polygon points="450,79 462,85 450,91" fill="#8b949e"/>
+      <g>
+        <rect x="468" y="55" width="105" height="60" rx="10" fill="#161b22" stroke="#30363d"/>
+        <text x="520" y="82" text-anchor="middle" fill="#e6edf3" font-family="monospace" font-size="11">events</text>
+        <text x="520" y="99" text-anchor="middle" fill="#e6edf3" font-family="monospace" font-size="11">.jsonl</text>
+        <text x="520" y="140" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="10">local only</text>
+      </g>
+      <line x1="579" y1="85" x2="619" y2="85" stroke="#8b949e" stroke-width="2"/>
+      <polygon points="619,79 631,85 619,91" fill="#8b949e"/>
+      <g>
+        <rect x="637" y="55" width="66" height="60" rx="10" fill="#161b22" stroke="#3fb950"/>
+        <text x="670" y="90" text-anchor="middle" fill="#3fb950" font-family="monospace" font-size="13" font-weight="bold">/rage</text>
+        <text x="670" y="140" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="10">the report</text>
+      </g>
+    </svg>
+    <figcaption>no cloud was harmed in the measuring of this rage</figcaption>
+  </figure>
+
+  <div class="signals">
+    <div class="signal"><span class="name">despair</span><span class="pts">+4</span>
+      <div class="ex">"forget it, I'll do it myself"</div></div>
+    <div class="signal"><span class="name">profanity</span><span class="pts">+3</span>
+      <div class="ex">the classics — in English and German</div></div>
+    <div class="signal"><span class="name">correction</span><span class="pts">+2</span>
+      <div class="ex">"I said…", "that's not what I asked"</div></div>
+    <div class="signal"><span class="name">terse-rejection</span><span class="pts">+2</span>
+      <div class="ex">"wrong again"</div></div>
+    <div class="signal"><span class="name">repetition</span><span class="pts">+2</span>
+      <div class="ex">same prompt, second time, slower</div></div>
+    <div class="signal"><span class="name">caps</span><span class="pts">+2</span>
+      <div class="ex">WHY ARE YOU STILL EDITING THAT FILE</div></div>
+    <div class="signal"><span class="name">negation-start</span><span class="pts">+1</span>
+      <div class="ex">"no", "stop", "why", "ugh"</div></div>
+    <div class="signal"><span class="name">punctuation</span><span class="pts">+1</span>
+      <div class="ex">!! ??? ?!</div></div>
+    <div class="signal"><span class="name">rapid-fire</span><span class="pts">+1</span>
+      <div class="ex">short prompt, &lt;25s after the last one</div></div>
+  </div>
+
+  <div class="note">
+    <b>Deliberately not counted:</b> code blocks and stack traces (pasting <code>FATAL!!!</code> is not anger),
+    short acronyms like API or TODO (not shouting), and <code>/rage</code> itself
+    (checking your rage is not a rage event).
+  </div>
+</section>
+
+<section class="wrap">
+  <h2><span class="hash">#</span> The report</h2>
+  <p class="lead">Type <b>/rage</b> whenever you want the damage report.</p>
+
+  <div class="terminal">
+    <div class="term-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+    <div class="term-body"><span class="t-dim">❯ /rage</span>
+
+  RAGE — this session
+  ──────────────────────────────────────────────
+
+  Reprimands : 3
+  Rage score : 14
+  Verdict    : <span class="t-yel">😐 Needs better prompting</span>
+
+  What set you off:
+    correction        2  <span class="t-bar">████████████████████████</span>
+    negation-start    2  <span class="t-bar">████████████████████████</span>
+    rapid-fire        2  <span class="t-bar">████████████████████████</span>
+    punctuation       1  <span class="t-bar">████████████</span>
+    profanity         1  <span class="t-bar">████████████</span>
+
+  Peak rage (6):
+    <span class="t-red">"ffs read the error message"</span>
+
+  RAGE — all time
+  ──────────────────────────────────────────────
+
+  Sessions with rage : 2
+  Total reprimands   : 4
+  RAGE/session       : 2.0  <span class="t-grn">😌 Great agentic workflow</span>
+
+  Most infuriating projects:
+    proj-alpha               3  <span class="t-bar">████████████████████████</span>
+    proj-beta                1  <span class="t-bar">████████</span></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2><span class="hash">#</span> Install</h2>
+  <p class="lead">Two commands inside Claude Code:</p>
+  <div class="install-code"><span class="c"># add the marketplace</span>
+/plugin marketplace add rangulvers/rage-o-meter
+
+<span class="c"># install the plugin</span>
+/plugin install rage-o-meter@rage-o-meter</div>
+  <p class="lead">Then just work as usual. The meter runs itself.</p>
+
+  <div class="note">
+    <b>Privacy:</b> everything stays in <code>~/.claude/rage/</code> on your machine.
+    Only an 80-character excerpt of flagged prompts is stored. Calm prompts never touch disk.
+    Wipe it any time with <code>--reset --yes</code>.
+  </div>
+</section>
+
+<footer class="wrap">
+  <p>
+    Built as a joke that happens to work. The scorer is heuristics, not a sentiment model —
+    it will miss your dry, polite fury. That's the price of staying offline.
+  </p>
+  <p style="margin-top:12px">
+    <a href="https://github.com/rangulvers/rage-o-meter">github.com/rangulvers/rage-o-meter</a>
+    · MIT · inspired by the original WTFs/minute cartoon
+  </p>
+</footer>
+
+</body>
+</html>
