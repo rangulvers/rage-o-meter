@@ -1,0 +1,12 @@
+{
+  "handle": "mkurz-dev",
+  "reprimands": 31,
+  "sessions": 4,
+  "ragePerSession": 7.8,
+  "rageScore": 118,
+  "band": "I'm doing the task myself",
+  "topSignals": [["correction", 19], ["repetition", 11], ["despair", 7], ["caps", 5]],
+  "peakRage": "for the last time, do NOT touch the migrations folder",
+  "signatureMove": "correction",
+  "caption": "it touched the migrations folder."
+}

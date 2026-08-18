@@ -1,0 +1,12 @@
+{
+  "handle": "annaschmidt",
+  "reprimands": 24,
+  "sessions": 6,
+  "ragePerSession": 4.0,
+  "rageScore": 71,
+  "band": "Needs better prompting",
+  "topSignals": [["correction", 12], ["caps", 7], ["punctuation", 6], ["negation-start", 4]],
+  "peakRage": "WARUM MACHST DU DAS SCHON WIEDER",
+  "signatureMove": "correction",
+  "caption": "I only shout in German. the scorer caught every single one."
+}

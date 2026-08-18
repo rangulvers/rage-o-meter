@@ -37,20 +37,21 @@ function loadEntries() {
     .sort((a, b) => b.ragePerSession - a.ragePerSession);
 }
 
-const BAR_WIDTH = 14;
+const BAR_WIDTH = 16;
 
 /**
- * Render the signal bars the way the real /rage report does: longest signal
- * gets a full bar, the rest scale against it. Entries only carry an ordered
- * top-3, so bar length encodes rank rather than an exact count we don't have.
+ * Signal bars, scaled against the top signal's real count — exactly how the
+ * terminal report draws them.
  */
 function signalRows(signals) {
-  if (!signals || !signals.length) return '';
+  if (!Array.isArray(signals) || !signals.length) return '';
+  const max = Math.max(...signals.map(([, n]) => n));
   return signals
-    .map((name, i) => {
-      const filled = Math.max(3, Math.round(BAR_WIDTH * (1 - i * 0.28)));
+    .map(([name, n]) => {
+      const filled = Math.max(1, Math.round((n / max) * BAR_WIDTH));
       return (
         `<div class="line"><span class="k">${esc(name)}</span>` +
+        `<span class="n">${esc(String(n).padStart(3))}</span>  ` +
         `<span class="bar">${'█'.repeat(filled)}</span></div>`
       );
     })
@@ -60,6 +61,22 @@ function signalRows(signals) {
 function card(e) {
   const style = BAND_STYLE[e.band] || BAND_STYLE['Needs better prompting'];
   const rps = Number(e.ragePerSession).toFixed(1);
+
+  const scoreRow = e.rageScore !== undefined
+    ? `\n        <div class="line"><span class="k">Rage score</span>${esc(e.rageScore)}</div>`
+    : '';
+
+  const peakBlock = e.peakRage
+    ? `\n        <div class="line sp"></div>
+        <div class="line dim">Peak rage:</div>
+        <div class="line peak">"${esc(e.peakRage)}"</div>`
+    : '';
+
+  const sigBlock = e.signatureMove
+    ? `\n        <div class="line sp"></div>
+        <div class="line dim">Signature move:</div>
+        <div class="line"><span class="bar">${esc(e.signatureMove)}</span></div>`
+    : '';
 
   return `
     <figure class="card ${style.key}">
@@ -71,13 +88,12 @@ function card(e) {
       <div class="screen">
         <div class="line"><span class="p">❯</span> <span class="cmd">/rage</span></div>
         <div class="line sp"></div>
-        <div class="line"><span class="k">Reprimands  </span>${esc(e.reprimands)}</div>
-        <div class="line"><span class="k">Sessions    </span>${esc(e.sessions)}</div>
+        <div class="line"><span class="k">Reprimands</span>${esc(e.reprimands)}</div>
+        <div class="line"><span class="k">Sessions</span>${esc(e.sessions)}</div>${scoreRow}
         <div class="line"><span class="k">RAGE/session</span><b>${esc(rps)}</b></div>
-        <div class="line"><span class="k">Verdict     </span>${style.emoji} ${esc(e.band)}</div>
         <div class="line sp"></div>
         <div class="line dim">What set them off:</div>
-        ${signalRows(e.topSignals)}
+        ${signalRows(e.topSignals)}${peakBlock}${sigBlock}
       </div>
 
       <figcaption class="quote">“${esc(e.caption)}”</figcaption>
@@ -145,8 +161,10 @@ function build() {
   .p{color:#8b949e}
   .cmd{color:#ffc857;font-weight:700}
   .k{color:rgba(255,255,255,.55);display:inline-block;min-width:15ch}
+  .n{color:#fff}
   .bar{color:#ffc857;letter-spacing:-1px}
   .dim{color:rgba(255,255,255,.55)}
+  .peak{color:#ff9d8a;white-space:pre-wrap;word-break:break-word}
   .screen b{color:#fff}
 
   .quote{margin-top:14px;color:rgba(255,255,255,.92);font-size:.9rem;

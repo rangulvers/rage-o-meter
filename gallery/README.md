@@ -28,14 +28,21 @@ Save it to `gallery/entries/<your-github-handle>.json`:
 ```json
 {
   "handle": "rangulvers",
-  "reprimands": 7,
-  "sessions": 1,
-  "ragePerSession": 7,
-  "band": "I'm doing the task myself",
-  "topSignals": ["correction", "caps", "despair"],
-  "caption": "asked for one file. it refactored forty-seven."
+  "reprimands": 16,
+  "sessions": 13,
+  "ragePerSession": 1.2,
+  "rageScore": 41,
+  "band": "Great agentic workflow",
+  "topSignals": [["correction", 13], ["profanity", 6], ["caps", 4]],
+  "peakRage": "WTF",
+  "signatureMove": "correction",
+  "caption": "13 corrections for something that is supposed to understand language."
 }
 ```
+
+> **`peakRage` is text you actually typed.** `--share` pre-fills it from your
+> angriest prompt so the card is honest. Read it before you open the PR, and
+> delete the line if you'd rather not publish it. It's optional.
 
 ### 3. Open a pull request
 
@@ -44,18 +51,21 @@ gallery on the next Pages build.
 
 ## Rules
 
-| Field | Rule |
-|---|---|
-| `handle` | Your GitHub username. Filename must match it. |
-| `reprimands` | Integer ≥ 0 |
-| `sessions` | Integer ≥ 1 |
-| `ragePerSession` | Number, 0–1000 |
-| `band` | Exactly one of the three verdict strings |
-| `topSignals` | Up to 3, from the real signal list |
-| `caption` | ≤ 120 chars, no HTML, no control characters |
+| Field | Required | Rule |
+|---|---|---|
+| `handle` | yes | Your GitHub username. Filename must match it. |
+| `reprimands` | yes | Integer ≥ 0 |
+| `sessions` | yes | Integer ≥ 1 |
+| `ragePerSession` | yes | Number, 0–1000 |
+| `band` | yes | Exactly one of the three verdict strings |
+| `topSignals` | yes | Up to 5 `[name, count]` pairs, from the real signal list |
+| `caption` | yes | ≤ 120 chars, no HTML, no control characters |
+| `rageScore` | no | Integer ≥ 0 |
+| `peakRage` | no | ≤ 80 chars, no HTML, no control characters |
+| `signatureMove` | no | One signal name |
 
 Any field not on that list is **rejected** — that's deliberate, so a stray
-`excerpt` or `prompt` key can never leak prompt text into a public repo.
+`cwd` or `prompt` key can never leak into a public repo.
 
 One entry per person. Update your existing file rather than adding a second one.
 

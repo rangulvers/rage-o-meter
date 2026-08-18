@@ -171,19 +171,27 @@ function renderAllTime(events) {
  */
 function buildShareCard(events, handle, caption) {
   const { totalRage, sessionCount, perSession } = summarize(events);
-  const topSignals = signalTally(events)
-    .slice(0, 3)
-    .map(([name]) => name);
+  const tally = signalTally(events);
+  const worst = events.slice().sort((a, b) => (b.score || 0) - (a.score || 0))[0];
 
-  return {
+  const card = {
     handle: handle || 'your-github-handle',
     reprimands: totalRage,
     sessions: sessionCount,
     ragePerSession: Number(perSession.toFixed(1)),
+    rageScore: events.reduce((s, e) => s + (e.score || 0), 0),
     band: band(perSession).label,
-    topSignals,
+    topSignals: tally.slice(0, 4).map(([name, n]) => [name, n]),
     caption: caption || 'what did it do this time?',
   };
+
+  // Your angriest prompt, pre-filled so the card is honest. Review it — this
+  // is the one field that contains text you actually typed. Delete the line
+  // if you would rather not publish it.
+  if (worst && worst.excerpt) card.peakRage = worst.excerpt.slice(0, 80);
+  if (tally.length) card.signatureMove = tally[0][0];
+
+  return card;
 }
 
 function renderShare(events, args) {
@@ -198,7 +206,12 @@ function renderShare(events, args) {
   lines.push(JSON.stringify(card, null, 2).split('\n').map((l) => '  ' + l).join('\n'));
   lines.push('');
   lines.push('  ' + '─'.repeat(46));
-  lines.push('  Contains no prompt text — only counts and signal names.');
+  if (card.peakRage) {
+    lines.push('  ⚠  "peakRage" is text you actually typed. Check it before');
+    lines.push('     you publish it — delete the line if you would rather not.');
+  } else {
+    lines.push('  Contains no prompt text — only counts and signal names.');
+  }
   lines.push('');
   lines.push('  To submit:');
   lines.push(`    1. Save the JSON above as  gallery/entries/${slug}.json`);

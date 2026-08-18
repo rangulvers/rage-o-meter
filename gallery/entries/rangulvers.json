@@ -1,9 +1,12 @@
 {
   "handle": "rangulvers",
-  "reprimands": 7,
-  "sessions": 1,
-  "ragePerSession": 7,
-  "band": "I'm doing the task myself",
-  "topSignals": ["correction", "caps", "despair"],
-  "caption": "asked for one file. it refactored forty-seven."
+  "reprimands": 16,
+  "sessions": 13,
+  "ragePerSession": 1.2,
+  "rageScore": 41,
+  "band": "Great agentic workflow",
+  "topSignals": [["correction", 13], ["profanity", 6], ["caps", 4]],
+  "peakRage": "WTF",
+  "signatureMove": "correction",
+  "caption": "13 corrections is a lot of \"just do what I said\" for something that understands language."
 }
